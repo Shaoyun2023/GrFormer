@@ -1,9 +1,10 @@
-GrFormer: A Novel Transformer on Grassmann Manifold for Infrared and Visible Image Fusion
-
+<img width="1504" height="717" alt="image" src="https://github.com/user-attachments/assets/f9c89492-1f43-467e-86ea-6e9955bb9943" />GrFormer: A Novel Transformer on Grassmann Manifold for Infrared and Visible Image Fusion
 Accetped by Information Fusion
 Volume 125, January 2026, 103402
-
 "https://doi.org/10.1016/j.inffus.2025.103402"
+
+<img width="1504" height="717" alt="image" src="https://github.com/user-attachments/assets/e7c59af9-6edb-4c09-a7b0-286e6335beaa" />
+
 
 Citation
 
