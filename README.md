@@ -12,8 +12,11 @@ Volume 125, January 2026, 103402
 Environment
 ----
 python==3.12.7
+
 pytorch==2.5.1
+
 pytorch-cuda==12.4
+
 scipy==1.13.1
 
 Training
