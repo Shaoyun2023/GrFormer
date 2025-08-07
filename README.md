@@ -16,13 +16,20 @@ scipy==1.13.1
 
 Citation
 ----
-@article{kang2026grformer,
-  title={GrFormer: A novel Transformer on Grassmann manifold for infrared and visible image fusion},
-  author={Kang, Huan and Li, Hui and Wu, Xiao-Jun and Xu, Tianyang and Wang, Rui and Cheng, Chunyang and Kittler, Josef},
-  journal={Information Fusion},
-  pages={103402},
-  year={2026},
-  publisher={Elsevier}
+If you are interested in our work, please cite it in the following format:
+>@article{kang2026grformer,
+>
+>title={GrFormer: A novel Transformer on Grassmann manifold for infrared and visible image fusion},
+>
+>author={Kang, Huan and Li, Hui and Wu, Xiao-Jun and Xu, Tianyang and Wang, Rui and Cheng, Chunyang and Kittler, Josef},
+>
+>journal={Information Fusion},
+>
+>pages={103402},
+>
+>year={2026},
+>
+>publisher={Elsevier}
 }
 
 Model Download
