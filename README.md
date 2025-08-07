@@ -1,15 +1,29 @@
-GrFormer: A Novel Transformer on Grassmann Manifold for Infrared and Visible Image Fusion
+🧩🚀GrFormer: A Novel Transformer on Grassmann Manifold for Infrared and Visible Image Fusion
 ====
 Accetped by 
 [Information Fusion 2026]
 ---
 Volume 125, January 2026, 103402
-"https://doi.org/10.1016/j.inffus.2025.103402"
+🔗"https://doi.org/10.1016/j.inffus.2025.103402"
 
-<img width="1504" height="717" alt="image" src="https://github.com/user-attachments/assets/e7c59af9-6edb-4c09-a7b0-286e6335beaa" />
+🔍Highlights
+---
+● **Manifold Attention Mechanism**  
+First embedding of Grassmann subspaces into Euclidean attention networks for multimodal structural/semantic fusion in manifold space.  
+
+● **Hierarchical Subspace Disentanglement**  
+Low-rank subspace mapping to decouple high/low-frequency image components with manifold-constrained cross-modal relation learning.  
+
+● **Dynamic Mask-Enhanced Fusion**  
+Learnable mask tensors for foreground-background separation to amplify cross-modal complementary interactions.  
+
+● **SOTA-Surpassing Performance**  
+Qualitative and quantitative performance breakthroughs on established benchmarks.  
 
 
-Environment
+<img width="1258" height="598" alt="image" src="https://github.com/user-attachments/assets/e724107f-d8ce-4fae-b06d-ec3477b8cd17" />
+
+🖥️Environment
 ----
 python==3.12.7
 
@@ -19,20 +33,20 @@ pytorch-cuda==12.4
 
 scipy==1.13.1
 
-Training
+⚙️Training
 ----
 ```bash
 python train_autoencoder.py
 ```
 
 
-Testing
+✔️Testing
 ----
 ```bash
 python test.py
 ```
 
-Citation
+📖Citation
 ----
 If you are interested in our work, please cite it in the following format:
 ```bash
@@ -48,6 +62,6 @@ publisher={Elsevier}
 
 
 
-Model Download
+⬇️Model Download
 ----
 The vgg16 model can be found in https://pan.baidu.com/s/14YYYrDZ1RM3yqFbYNnbQbw, and the password is: usd6
