@@ -428,7 +428,10 @@ def get_test_image1(paths, height=None, width=None, flag=False):
         image = get_image(path, height, width,  flag)
         if height is not None and width is not None:
             image = scipy_misc_imresize(image, [height, width], interp='nearest')
+        print(image.shape)
         base_size = 256
+        viimage = image
+
         if image.ndim == 3:
             image = np.sum(image, axis=2)
         image = image.astype(np.float32)
@@ -438,6 +441,9 @@ def get_test_image1(paths, height=None, width=None, flag=False):
         w = image.shape[1]
         c = 0
 
+        # if 1 * base_size > h or 1 * base_size > w:
+        #     c = 3
+        #     images = get_img_parts256h(image, h, w)
         if 1 * base_size == h and 1 * base_size == w:
             c = 4
             images = get_img_parts11(image, h, w)
@@ -463,20 +469,20 @@ def get_test_image1(paths, height=None, width=None, flag=False):
         if 1 * base_size < h < 2 * base_size and 2 * base_size < w < 3 * base_size and h!=450 and w!=620:
             c = 6
             images = get_img_parts4(image, h, w)
-        if 3 * base_size < h <= 4 * base_size+4 and 4 * base_size < w <= 5 * base_size+5:
+        if 3 * base_size <= h <= 4 * base_size+4 and 4 * base_size <= w <= 5 * base_size+5:
             c = 20
             images = get_img_parts5(image, h, w)
         if 0 * base_size < h < 1 * base_size and 1 * base_size < w < 2 * base_size:
             c = 2
-            images = get_img_parts6(image, h, w)
+            images = get_img_parts61(image, h, w)
         if 0 * base_size < h < 1 * base_size and 2 * base_size < w < 3 * base_size:
             c = 3
-            images = get_img_parts7(image, h, w)
+            images = get_img_parts71(image, h, w)
         if h == 1 * base_size and 2 * base_size < w < 3 * base_size:
             c = 3
             images = get_img_parts8(image, h, w)
 
-    return images, h, w, c
+    return images, h, w, c, viimage
 
 def get_img_parts1(image, h, w):
     pad = nn.ConstantPad2d(padding=(0, 512-w, 0, 512-h), value=0)
@@ -892,6 +898,35 @@ def get_img_parts6(image, h, w):
     img2 = torch.reshape(img2, [1, 1, img2.shape[0], img2.shape[1]])
     images.append(img1.float())
     images.append(img2.float())
+    return images
+
+def get_img_parts61(image, h, w):
+    pad = nn.ConstantPad2d(padding=(0, 512-w, 0, 256-h), value=0)
+    image = torch.from_numpy(image)
+    image = pad(image)
+    images = []
+    img1 = image[0:256, 0: 256]
+    img1 = torch.reshape(img1, [1, 1, img1.shape[0], img1.shape[1]])
+    img2 = image[0:256, w-256: w]
+    img2 = torch.reshape(img2, [1, 1, img2.shape[0], img2.shape[1]])
+    images.append(img1.float())
+    images.append(img2.float())
+    return images
+
+def get_img_parts71(image, h, w):
+    pad = nn.ConstantPad2d(padding=(0, 768-w, 0, 256-h), value=0)
+    image = torch.from_numpy(image)
+    image = pad(image)
+    images = []
+    img1 = image[0:256, 0: 256]
+    img1 = torch.reshape(img1, [1, 1, img1.shape[0], img1.shape[1]])
+    img2 = image[0:256, 256: 512]
+    img2 = torch.reshape(img2, [1, 1, img2.shape[0], img2.shape[1]])
+    img3 = image[0:256, w-256: w]
+    img3 = torch.reshape(img3, [1, 1, img3.shape[0], img3.shape[1]])
+    images.append(img1.float())
+    images.append(img2.float())
+    images.append(img3.float())
     return images
 
 
