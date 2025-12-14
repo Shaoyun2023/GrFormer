@@ -11,7 +11,115 @@ import torchvision.transforms as transforms
 import random
 import matplotlib.pyplot as plt
 from thop import profile, clever_format
+from PIL import Image
 
+def tensor_to_pil(tensor, mode='RGB'):
+    """
+    将torch张量转换为PIL图像
+    Args:
+        tensor: torch.Tensor, 形状应为 [C, H, W]
+        mode: PIL图像模式，如 'RGB', 'L' 等
+    Returns:
+        PIL.Image对象
+    """
+    # 确保张量在CPU上且是float类型
+    tensor = tensor.cpu().detach()
+
+    # 检查张量形状
+    if tensor.dim() != 3:
+        raise ValueError(f"输入张量应为3维 [C, H, W]，但得到的是 {tensor.shape}")
+
+    # 如果是Byte类型（0-255），转换为float（0-1）
+    if tensor.dtype == torch.uint8:
+        tensor = tensor.float() / 255.0
+
+    # 如果张量值范围不是0-1，进行归一化或clamp
+    if tensor.min() < 0 or tensor.max() > 1:
+        # 方法1：clamp到0-1范围
+        tensor = tensor.clamp(0, 1)
+        # 或者方法2：归一化到0-1范围
+        # tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
+
+    # 转换为numpy数组，并调整维度为 [H, W, C]
+    # 注意：PIL需要 [H, W, C] 格式
+    if tensor.shape[0] == 3:  # RGB图像
+        # 从 [C, H, W] 转换为 [H, W, C]
+        numpy_array = tensor.permute(1, 2, 0).numpy()
+    else:
+        # 对于单通道图像
+        numpy_array = tensor.squeeze(0).numpy()
+
+    # 转换为0-255的uint8
+    numpy_array = (numpy_array * 255).astype(np.uint8)
+
+    # 创建PIL图像
+    pil_image = Image.fromarray(numpy_array, mode=mode)
+
+    return pil_image
+
+def clamp(value, min=0., max=1.0):
+    """
+    将像素值强制约束在[0,1], 以免出现异常斑点
+    :param value:
+    :param min:
+    :param max:
+    :return:
+    """
+    return torch.clamp(value, min=min, max=max)
+
+def RGB2YCrCb(rgb_image):
+    """
+    将RGB格式转换为YCrCb格式
+
+    :param rgb_image: RGB格式的图像数据
+    :return: Y, Cr, Cb
+    """
+    R = rgb_image[0:1]
+    G = rgb_image[1:2]
+    B = rgb_image[2:3]
+    Y = 0.299 * R + 0.587 * G + 0.114 * B
+    Cr = (R - Y) * 0.713 + 0.5
+    Cb = (B - Y) * 0.564 + 0.5
+
+    # Y = clamp(Y)
+    # Cr = clamp(Cr)
+    # Cb = clamp(Cb)
+
+
+
+    # image = torch.sum(Cb, dim=0, keepdim=True)
+    #
+    # image = image.squeeze().detach().cpu().numpy()
+    #
+    # image = (image - image.min()) / (image.max() - image.min())
+    # plt.imshow(image, cmap='gray')
+    # plt.axis('off')
+    # plt.show()
+
+    return Y, Cb, Cr
+
+
+def YCrCb2RGB(Y, Cb, Cr):
+    """
+    将YcrCb格式转换为RGB格式
+
+    :param Y:
+    :param Cb:
+    :param Cr:
+    :return:
+    """
+    ycrcb = torch.cat([Y, Cr, Cb], dim=0)
+    C, W, H = ycrcb.shape
+    im_flat = ycrcb.reshape(3, -1).transpose(0, 1)
+    mat = torch.tensor(
+        [[1.0, 1.0, 1.0], [1.403, -0.714, 0.0], [0.0, -0.344, 1.773]]
+    ).to(Y.device)
+    bias = torch.tensor([0.0 / 255, -0.5, -0.5]).to(Y.device)
+    temp = (im_flat + bias).mm(mat)
+    out = temp.transpose(0, 1).reshape(C, W, H)
+    out = (out - out.min()) / (out.max() - out.min())
+    out = clamp(out)
+    return out
 
 def set_seed_thread(seed):
     seed = seed
@@ -45,8 +153,35 @@ def load_model1(path, deepsupervision):
 
 
 def run_demo(nest_model, infrared_path, visible_path, output_path_root, index, f_type,mode):
-	img_ir,h,w,c = utils.get_test_image1(infrared_path)
-	img_vi,h,w,c = utils.get_test_image1(visible_path)
+	img_ir,h,w,c,viimage = utils.get_test_image1(infrared_path)
+	img_vi,h,w,c,viimage = utils.get_test_image1(visible_path)
+
+	if viimage is not None and len(viimage.shape) == 3:
+		# 转换为torch张量并调整维度顺序
+
+		# image = torch.sum(viimage, dim=0, keepdim=True)
+		# image = viimage.squeeze().detach().cpu().numpy()
+		#
+		# image = (image - image.min()) / (image.max() - image.min())
+		# plt.imshow(image, cmap='gray')
+		# plt.axis('off')
+		# plt.show()
+
+		viimage_tensor = torch.from_numpy(viimage).permute(2, 0, 1)
+
+		if args.cuda:
+			viimage_tensor = viimage_tensor.to(args.device)
+
+		# 提取可见光图像的Cb和Cr通道
+		Y_vi, Cb_vi, Cr_vi = RGB2YCrCb(viimage_tensor)
+
+	# image = torch.sum(Y_vi, dim=0, keepdim=True)
+	# image = image.squeeze().detach().cpu().numpy()
+	#
+	# image = (image - image.min()) / (image.max() - image.min())
+	# plt.imshow(image)
+	# plt.axis('off')
+	# plt.show()
 
 	# c = 1
 
@@ -128,19 +263,25 @@ def run_demo(nest_model, infrared_path, visible_path, output_path_root, index, f
 	output_count = 0
 	for img_fusion in img_fusion_list:
 
-		# image = img_fusion.squeeze().detach().cpu().numpy()
-		#
-		# image = (image - image.min()) / (image.max() - image.min())
-		# plt.imshow(image, cmap='jet')
-		# # plt.imshow(image, cmap='gray')
-		# plt.axis('off')
-		# plt.show()
+		# img_fusion是融合后的Y通道
+		Y_fused = img_fusion
 
-		# print(img_fusion)
-		# x_min2 = torch.min(img_fusion)
-		# x_max2 = torch.max(img_fusion)
-		# img_fusion = (img_fusion- x_min2) / (x_max2 - x_min2) * 255
-		# img_fusion = -img_fusion
+		# 调整尺寸匹配
+		if Y_fused.shape[-2:] != Cb_vi.shape[-2:]:
+			# 如果需要调整尺寸
+			Y_fused_resized = torch.nn.functional.interpolate(
+				Y_fused.unsqueeze(0),
+				size=(h, w),
+				mode='bilinear',
+				align_corners=False
+			).squeeze(0)
+		else:
+			Y_fused_resized = Y_fused
+
+		# image = torch.sum(Y_fused_resized, dim=0, keepdim=True)
+
+		# 将Y通道与Cb、Cr通道结合，转换回RGB
+		rgb_fused_image = YCrCb2RGB(Y_fused_resized, Cb_vi, Cr_vi)
 		if index < 10:
 			file_name = '0' + str(index) + '.png'
 		else:
@@ -148,18 +289,19 @@ def run_demo(nest_model, infrared_path, visible_path, output_path_root, index, f
 		output_path = output_path_root + file_name
 		output_count += 1
 		# save images
-		utils.save_image_test(img_fusion, output_path)
-		print(output_path)
+		pil_image = tensor_to_pil(rgb_fused_image)
+		pil_image.save(output_path)
+		print(f"Saved: {output_path}")
 
 
 def main():
 	# set_seed_thread(3407)
 	# run demo
-	test_path = "images/test-TNO/"
+	test_path = "images/test-RoadScene/"
 	network_type = 'SwinFuse'
 	fusion_type = ['l1_mean']
 
-	output_path = 'outputsTNO/attention_avg/'
+	output_path = 'outputs/attention_avg/'
 
 	# in_c = 3 for RGB imgs; in_c = 1 for gray imgs
 	in_chans = 1
@@ -199,3 +341,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
+
