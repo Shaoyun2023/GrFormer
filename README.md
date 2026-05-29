@@ -42,9 +42,16 @@ python train_autoencoder.py
 
 ✔️Testing
 ----
+For inputs with standard image dimensions, please use the following command for testing:
 ```bash
 python test.py
 ```
+
+To enhance the practical applicability and overall robustness of the framework, particularly when handling images of non-standard or irregular dimensions, we have introduced a new testing script:
+```bash
+python test_robust.py
+```
+This script is highly optimized for robustness. The updated testing pipeline incorporates a more flexible data processing mechanism to ensure stable inference across diverse real-world scenarios. It effectively accommodates varying aspect ratios and irregular resolutions while maintaining consistent manifold-based feature fusion.
 
 📖Citation
 ----
