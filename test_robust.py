@@ -330,8 +330,8 @@ def main():
 			# for i in range(1000, 1221):
 			# for i in range(1000, 1040):
 			index = i + 1
-			infrared_path = test_path + 'ir/' + f'{index:02d}.png'
-			visible_path = test_path + 'vi/' + f'{index:02d}.png'
+			infrared_path = os.path.join(test_path, 'IR', f"{index:02d}.png")
+    		visible_path = os.path.join(test_path, 'VIS', f"{index:02d}.png")
 			# infrared_path = test_ir_path + 'roadscene' + '_' + str(index) + '.png'
 			# visible_path = test_vis_path + 'roadscene' + '_' + str(index) + '.png'
 			# infrared_path = test_ir_path + 'video' + '_' + str(index) + '.png'
